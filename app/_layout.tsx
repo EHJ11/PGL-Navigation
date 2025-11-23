@@ -4,12 +4,13 @@ export default function Layout() {
   return (
     <Drawer>
       <Drawer.Screen
-        name="index"
+        name="welcome"
         options={{
           drawerLabel: "Bienvenida",
-          title: "Inicio",
+          title: "Bienvenida",
         }}
       />
+
       <Drawer.Screen
         name="(tabs)"
         options={{
@@ -17,10 +18,11 @@ export default function Layout() {
           title: "Portfolio",
         }}
       />
+
       <Drawer.Screen
-        name="counter"
+        name="recuento"
         options={{
-          drawerLabel: "Contador",
+          drawerLabel: "Recuento",
           title: "Lista de Recuento",
         }}
       />
