@@ -1,5 +1,4 @@
 import { Drawer } from "expo-router/drawer";
-// import "react-native-gesture-handler";
 export default function Layout() {
   return (
     <Drawer>
