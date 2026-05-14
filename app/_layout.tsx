@@ -1,12 +1,36 @@
-import { Stack } from "expo-router";
-
+import { Drawer } from "expo-router/drawer";
+import "react-native-gesture-handler";
 export default function Layout() {
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="recuento" options={{ title: "Recuento" }} />
-      <Stack.Screen name="counter" options={{ title: "Contador" }} />
-    </Stack>
+    <Drawer>
+      <Drawer.Screen
+        name="index"
+        options={{
+          drawerItemStyle: { display: "none" },
+          title: "Inicio",
+        }}
+      />
+      <Drawer.Screen
+        name="welcome"
+        options={{
+          drawerLabel: "Bienvenida",
+          title: "Bienvenida",
+        }}
+      />
+      <Drawer.Screen
+        name="(tabs)"
+        options={{
+          drawerLabel: "Mi Portfolio",
+          title: "Portfolio",
+        }}
+      />
+      <Drawer.Screen
+        name="recuento"
+        options={{
+          drawerLabel: "Lista de Recuento",
+          title: "Lista de Recuento",
+        }}
+      />
+    </Drawer>
   );
 }

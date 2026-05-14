@@ -1,20 +1,28 @@
-import { View, Text, Button, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { useRouter } from "expo-router";
 
-export default function Welcome() {
+export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>¡Bienvenido a mi App!</Text>
       <Image
         source={require("../assets/welcome-image.png")}
         style={styles.image}
       />
-      <Button
-        title="Ir a mi Portfolio"
+
+      <Text style={styles.title}>Bienvenido</Text>
+
+      <Text style={styles.subtitle}>
+        Explora mi portfolio y conoce más sobre mí
+      </Text>
+
+      <Pressable
+        style={styles.button}
         onPress={() => router.push("/(tabs)/hobbies")}
-      />
+      >
+        <Text style={styles.buttonText}>Ver Portfolio</Text>
+      </Pressable>
     </View>
   );
 }
@@ -22,10 +30,38 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
     padding: 20,
   },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
-  image: { width: 250, height: 250, marginBottom: 30, borderRadius: 20 },
+  image: {
+    width: 200,
+    height: 200,
+    marginBottom: 30,
+    resizeMode: "contain",
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 40,
+    color: "#555",
+  },
+  button: {
+    backgroundColor: "#3498db",
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });
