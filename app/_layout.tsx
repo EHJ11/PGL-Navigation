@@ -1,31 +1,12 @@
-import { Drawer } from "expo-router/drawer";
+import { Stack } from "expo-router";
 
 export default function Layout() {
   return (
-    <Drawer>
-      <Drawer.Screen
-        name="welcome"
-        options={{
-          drawerLabel: "Bienvenida",
-          title: "Bienvenida",
-        }}
-      />
-
-      <Drawer.Screen
-        name="(tabs)"
-        options={{
-          drawerLabel: "Mi Portfolio",
-          title: "Portfolio",
-        }}
-      />
-
-      <Drawer.Screen
-        name="recuento"
-        options={{
-          drawerLabel: "Recuento",
-          title: "Lista de Recuento",
-        }}
-      />
-    </Drawer>
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="recuento" options={{ title: "Recuento" }} />
+      <Stack.Screen name="counter" options={{ title: "Contador" }} />
+    </Stack>
   );
 }

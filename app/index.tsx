@@ -23,6 +23,20 @@ export default function WelcomeScreen() {
       >
         <Text style={styles.buttonText}>Ver Portfolio</Text>
       </Pressable>
+
+      <Pressable
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => router.push("/recuento")}
+      >
+        <Text style={styles.buttonText}>Recuento</Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => router.push("/counter")}
+      >
+        <Text style={styles.buttonText}>Contador</Text>
+      </Pressable>
     </View>
   );
 }
@@ -58,6 +72,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     paddingVertical: 15,
     borderRadius: 10,
+    marginBottom: 15,
+  },
+  secondaryButton: {
+    backgroundColor: "#2ecc71",
   },
   buttonText: {
     color: "#fff",

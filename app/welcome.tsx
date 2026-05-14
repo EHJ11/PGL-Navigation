@@ -13,7 +13,7 @@ export default function Welcome() {
       />
       <Button
         title="Ir a mi Portfolio"
-        onPress={() => router.push("/portfolio")}
+        onPress={() => router.push("/(tabs)/hobbies")}
       />
     </View>
   );
