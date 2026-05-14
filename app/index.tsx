@@ -65,3 +65,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+// url desde la raiz, añadir el settings, en gallerys poner el contaxt
+// names.map
+// header show false
+// se puede tener en el layout una verificacion para saber si tienes el token de usuario
+// puede ser con fragmentos, y si no se devuelbe con el drawer string
+//
