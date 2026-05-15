@@ -22,6 +22,13 @@ export default function TabsLayout() {
           headerShown: false,
         }}
       />
+      <Tabs.Screen
+        name="figuritas"
+        options={{
+          title: "Figuritas",
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
