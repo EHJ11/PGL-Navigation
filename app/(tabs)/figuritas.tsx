@@ -14,7 +14,7 @@ import ProductItem, {
   CATEGORIES,
   getImageForCategory,
 } from "../../components/ProductItem";
-import { Product } from "../types/product";
+import { Product } from "../../types/product";
 
 type Screen = "add" | "list";
 

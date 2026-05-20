@@ -34,7 +34,7 @@ export default function LoginScreen() {
       return;
     }
 
-    await saveToken(response.data.token);
+    await saveToken(response.data.object.token);
 
     Alert.alert("Correcto", "Login exitoso");
 

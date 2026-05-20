@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Product } from "../app/types/product";
+import { Product } from "../types/product";
 
 export const CATEGORIES: { label: string; image: ImageSourcePropType }[] = [
   { label: "Edad antigua",            image: require("../assets/soldados/SoldadoRomano.png") },
