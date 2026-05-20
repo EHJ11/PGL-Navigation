@@ -1,12 +1,12 @@
 import { apiRequest } from "./api";
 
 export async function registerUser(
-  fullName: string,
+  fullname: string,
   email: string,
   password: string,
 ) {
   return await apiRequest("auth/register", "POST", {
-    fullName,
+    fullname,
     email,
     pswd: password,
   });
