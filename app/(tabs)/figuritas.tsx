@@ -6,9 +6,12 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  Modal,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
+import { v4 as uuidv4 } from "uuid";
 import PortfolioHeader from "../../components/PortfolioHeader";
 import ProductItem, {
   CATEGORIES,
@@ -16,151 +19,74 @@ import ProductItem, {
 } from "../../components/ProductItem";
 import { Product } from "../../types/product";
 
-type Screen = "add" | "list";
-
 export default function FiguritasScreen() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [screen, setScreen] = useState<Screen>("list");
+
+  // ✅ CORREGIDO: estado del modal en lugar de cambio de pantalla
+  const [modalVisible, setModalVisible] = useState(false);
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const generateId = () =>
-    Date.now().toString() + Math.random().toString(36).substring(2);
-
   const handleAddProduct = () => {
-    if (!name.trim() || !price.trim() || !category) return;
+    if (!name.trim() || !price.trim() || !category) {
+      Alert.alert("Error", "Rellena todos los campos antes de guardar");
+      return;
+    }
+
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      Alert.alert("Error", "Introduce un precio válido");
+      return;
+    }
+
     const newProduct: Product = {
-      id: generateId(),
-      name,
+      id: uuidv4(), // ✅ CORREGIDO: uuid en lugar de Date.now()
+      name: name.trim(),
       category,
-      price: parseFloat(price),
+      price: parsedPrice,
       marked: false,
     };
-    setProducts([...products, newProduct]);
+
+    setProducts((prev) => [...prev, newProduct]);
     setName("");
     setPrice("");
     setCategory("");
-    setScreen("list");
+    setDropdownOpen(false);
+    setModalVisible(false);
   };
 
   const toggleMark = (id: string) =>
-    setProducts(
-      products.map((p) => (p.id === id ? { ...p, marked: !p.marked } : p))
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, marked: !p.marked } : p))
     );
 
   const deleteProduct = (id: string) =>
-    setProducts(products.filter((p) => p.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+
+  // ✅ CORREGIDO: borrar todos
+  const clearAll = () => {
+    Alert.alert(
+      "Borrar todo",
+      "¿Seguro que quieres eliminar todas las figuritas?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Borrar", style: "destructive", onPress: () => setProducts([]) },
+      ]
+    );
+  };
 
   const totalItems = products.length;
-  const totalPrice = products.reduce((acc, p) => acc + p.price, 0).toFixed(2);
+  // ✅ CORREGIDO: contadores de marcados y precio total de marcados
+  const markedItems = products.filter((p) => p.marked).length;
+  const totalPriceMarked = products
+    .filter((p) => p.marked)
+    .reduce((acc, p) => acc + p.price, 0)
+    .toFixed(2);
 
-  if (screen === "add") {
-    const selectedImage = category ? getImageForCategory(category) : null;
-    return (
-      <View style={styles.container}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <PortfolioHeader />
-
-          <View style={styles.headerBox}>
-            <Text style={styles.headerText}>Figuras de plomo.es</Text>
-          </View>
-
-          <View style={styles.formArea}>
-            <TextInput
-              style={styles.input}
-              placeholder="Añade su nombre"
-              placeholderTextColor="#5b8dd9"
-              value={name}
-              onChangeText={setName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Añade su precio"
-              placeholderTextColor="#5b8dd9"
-              keyboardType="numeric"
-              value={price}
-              onChangeText={setPrice}
-            />
-
-            <TouchableOpacity
-              style={[styles.input, styles.dropdown]}
-              onPress={() => setDropdownOpen(!dropdownOpen)}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={
-                  category ? styles.dropdownSelected : styles.dropdownPlaceholder
-                }
-              >
-                {category || "Añade su categoria"}
-              </Text>
-              <Text style={styles.dropdownArrow}>
-                {dropdownOpen ? "▲" : "▼"}
-              </Text>
-            </TouchableOpacity>
-
-            {dropdownOpen && (
-              <View style={styles.dropdownList}>
-                {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.label}
-                    style={[
-                      styles.dropdownItem,
-                      category === cat.label && styles.dropdownItemSelected,
-                    ]}
-                    onPress={() => {
-                      setCategory(cat.label);
-                      setDropdownOpen(false);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Image
-                      source={cat.image}
-                      style={styles.dropdownItemImage}
-                      resizeMode="contain"
-                    />
-                    <Text style={styles.dropdownItemText}>{cat.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-
-            {selectedImage && !dropdownOpen && (
-              <View style={styles.previewBox}>
-                <Image
-                  source={selectedImage}
-                  style={styles.previewImage}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
-          </View>
-
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.btnYellow}
-              onPress={handleAddProduct}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.btnYellowText}>Guardar figurita</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btnBlue, { marginTop: 10 }]}
-              onPress={() => setScreen("list")}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.btnBlueText}>Ver lista ({totalItems})</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
+  const selectedImage = category ? getImageForCategory(category) : null;
 
   return (
     <View style={styles.container}>
@@ -170,14 +96,39 @@ export default function FiguritasScreen() {
         <Text style={styles.headerText}>Figuras de plomo.es</Text>
       </View>
 
-      <View style={styles.listSubHeader}>
-        <Text style={styles.listSubTitle}>Mi colección:</Text>
+      {/* ✅ CORREGIDO: contadores completos */}
+      <View style={styles.statsRow}>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>Total</Text>
+          <Text style={styles.statValue}>{totalItems}</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>Marcadas</Text>
+          <Text style={styles.statValue}>{markedItems}</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>Precio marcadas</Text>
+          <Text style={styles.statValue}>{totalPriceMarked} €</Text>
+        </View>
+      </View>
+
+      <View style={styles.actionsRow}>
         <TouchableOpacity
-          style={styles.btnYellowSmall}
-          onPress={() => setScreen("add")}
+          style={styles.btnAdd}
+          onPress={() => setModalVisible(true)}
           activeOpacity={0.8}
         >
-          <Text style={styles.btnYellowSmallText}>{"Añadir\nfigurita"}</Text>
+          <Text style={styles.btnAddText}>+ Añadir figurita</Text>
+        </TouchableOpacity>
+
+        {/* ✅ CORREGIDO: botón borrar todos deshabilitado si lista vacía */}
+        <TouchableOpacity
+          style={[styles.btnClear, totalItems === 0 && styles.btnDisabled]}
+          onPress={clearAll}
+          disabled={totalItems === 0}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.btnClearText}>Borrar todo</Text>
         </TouchableOpacity>
       </View>
 
@@ -202,27 +153,124 @@ export default function FiguritasScreen() {
         )}
       />
 
-      <View style={styles.listFooter}>
-        <View style={styles.totalBox}>
-          <Text style={styles.totalText}>Total figuritas:</Text>
-          <Text style={styles.totalValue}>{totalItems}</Text>
+      {/* ✅ CORREGIDO: Modal real de React Native */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <Text style={styles.modalTitle}>Nueva figurita</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                placeholderTextColor="#5b8dd9"
+                value={name}
+                onChangeText={setName}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Precio"
+                placeholderTextColor="#5b8dd9"
+                keyboardType="numeric"
+                value={price}
+                onChangeText={setPrice}
+              />
+
+              <TouchableOpacity
+                style={[styles.input, styles.dropdown]}
+                onPress={() => setDropdownOpen(!dropdownOpen)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={
+                    category ? styles.dropdownSelected : styles.dropdownPlaceholder
+                  }
+                >
+                  {category || "Selecciona categoría"}
+                </Text>
+                <Text style={styles.dropdownArrow}>
+                  {dropdownOpen ? "▲" : "▼"}
+                </Text>
+              </TouchableOpacity>
+
+              {dropdownOpen && (
+                <View style={styles.dropdownList}>
+                  {CATEGORIES.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.label}
+                      style={[
+                        styles.dropdownItem,
+                        category === cat.label && styles.dropdownItemSelected,
+                      ]}
+                      onPress={() => {
+                        setCategory(cat.label);
+                        setDropdownOpen(false);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Image
+                        source={cat.image}
+                        style={styles.dropdownItemImage}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.dropdownItemText}>{cat.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
+              {selectedImage && !dropdownOpen && (
+                <View style={styles.previewBox}>
+                  <Image
+                    source={selectedImage}
+                    style={styles.previewImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.btnSave}
+                onPress={handleAddProduct}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.btnSaveText}>Guardar figurita</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnCancel}
+                onPress={() => {
+                  setModalVisible(false);
+                  setName("");
+                  setPrice("");
+                  setCategory("");
+                  setDropdownOpen(false);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.btnCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
         </View>
-        <View style={styles.totalBox}>
-          <Text style={styles.totalText}>Precio total:</Text>
-          <Text style={styles.totalValue}>{totalPrice} €</Text>
-        </View>
-      </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#dce8f5" },
-  scrollContent: { flexGrow: 1, paddingBottom: 24 },
   headerBox: {
     backgroundColor: "#90c4f0",
     borderRadius: 20,
-    margin: 12,
+    marginHorizontal: 12,
+    marginBottom: 8,
     paddingVertical: 16,
     paddingHorizontal: 20,
     alignItems: "center",
@@ -236,7 +284,81 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontStyle: "italic",
   },
-  formArea: { paddingHorizontal: 14, paddingTop: 4 },
+  statsRow: {
+    flexDirection: "row",
+    marginHorizontal: 12,
+    marginBottom: 10,
+    gap: 8,
+  },
+  statBox: {
+    flex: 1,
+    backgroundColor: "#c7e0f5",
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#90c4f0",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  statLabel: { fontSize: 11, color: "#1a3a5c", fontWeight: "600" },
+  statValue: { fontSize: 16, fontWeight: "800", color: "#0d2f55" },
+  actionsRow: {
+    flexDirection: "row",
+    marginHorizontal: 12,
+    marginBottom: 10,
+    gap: 8,
+  },
+  btnAdd: {
+    flex: 2,
+    backgroundColor: "#fde68a",
+    borderWidth: 1.5,
+    borderColor: "#d4a017",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  btnAddText: { fontSize: 14, fontWeight: "700", color: "#7c4a00" },
+  btnClear: {
+    flex: 1,
+    backgroundColor: "#fee2e2",
+    borderWidth: 1.5,
+    borderColor: "#fca5a5",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  btnClearText: { fontSize: 14, fontWeight: "700", color: "#b91c1c" },
+  btnDisabled: { opacity: 0.4 },
+  listScroll: { flex: 1, paddingHorizontal: 12 },
+  emptyBox: {
+    borderWidth: 1.5,
+    borderColor: "#90c4f0",
+    borderRadius: 14,
+    backgroundColor: "#e8f3fc",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginTop: 10,
+  },
+  emptyText: { fontSize: 16, color: "#2563a8", fontWeight: "500" },
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#dce8f5",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: "90%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#0d2f55",
+    textAlign: "center",
+    marginBottom: 16,
+  },
   input: {
     backgroundColor: "#e8f3fc",
     borderWidth: 1.5,
@@ -285,67 +407,25 @@ const styles = StyleSheet.create({
     borderColor: "#90c4f0",
     paddingVertical: 16,
   },
-  previewImage: { width: 120, height: 120 },
-  footer: { padding: 14 },
-  btnYellow: {
+  previewImage: { width: 100, height: 100 },
+  btnSave: {
     backgroundColor: "#fde68a",
     borderWidth: 1.5,
     borderColor: "#d4a017",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
+    marginBottom: 10,
   },
-  btnYellowText: { fontSize: 16, fontWeight: "700", color: "#7c4a00" },
-  btnBlue: {
-    backgroundColor: "#90c4f0",
+  btnSaveText: { fontSize: 16, fontWeight: "700", color: "#7c4a00" },
+  btnCancel: {
+    backgroundColor: "#e8f3fc",
     borderWidth: 1.5,
-    borderColor: "#5b9fd4",
+    borderColor: "#90c4f0",
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: "center",
+    marginBottom: 10,
   },
-  btnBlueText: { fontSize: 15, fontWeight: "700", color: "#0d2f55" },
-  listSubHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginHorizontal: 14,
-    marginBottom: 8,
-  },
-  listSubTitle: { fontSize: 15, fontWeight: "700", color: "#1a3a5c", flex: 1 },
-  btnYellowSmall: {
-    backgroundColor: "#fde68a",
-    borderWidth: 1.5,
-    borderColor: "#d4a017",
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: "center",
-  },
-  btnYellowSmallText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#7c4a00",
-    textAlign: "center",
-  },
-  listScroll: { flex: 1, paddingHorizontal: 14 },
-  emptyBox: {
-    borderWidth: 1.5,
-    borderColor: "#90c4f0",
-    borderRadius: 14,
-    backgroundColor: "#e8f3fc",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
-  emptyText: { fontSize: 16, color: "#2563a8", fontWeight: "500" },
-  listFooter: {
-    flexDirection: "row",
-    borderTopWidth: 1.5,
-    borderTopColor: "#90c4f0",
-    backgroundColor: "#c7e0f5",
-  },
-  totalBox: { flex: 1, alignItems: "center", paddingVertical: 12 },
-  totalText: { fontSize: 13, color: "#1a3a5c", fontWeight: "600" },
-  totalValue: { fontSize: 18, fontWeight: "800", color: "#0d2f55" },
+  btnCancelText: { fontSize: 15, fontWeight: "600", color: "#1a3a5c" },
 });

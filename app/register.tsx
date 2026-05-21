@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
@@ -15,6 +16,7 @@ export default function RegisterScreen() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleRegister() {
     if (fullName.trim() === "") {
@@ -32,16 +34,28 @@ export default function RegisterScreen() {
       return;
     }
 
-    const response = await registerUser(fullName, email, password);
+    setLoading(true);
 
-    if (!response.ok) {
-      Alert.alert("Error", response.data.message);
-      return;
+    try {
+      const response = await registerUser(fullName, email, password);
+
+      if (!response.ok) {
+        const message =
+          response.data?.message ||
+          response.data?.error ||
+          "Error al registrar el usuario";
+        Alert.alert("Error", message);
+        return;
+      }
+
+      Alert.alert("Correcto", "Usuario registrado correctamente");
+      router.replace("/login");
+    } catch (error) {
+      Alert.alert("Error", "Ocurrió un error inesperado. Inténtalo de nuevo.");
+      console.error("Register error:", error);
+    } finally {
+      setLoading(false);
     }
-
-    Alert.alert("Correcto", "Usuario registrado correctamente");
-
-    router.replace("/login");
   }
 
   return (
@@ -60,6 +74,8 @@ export default function RegisterScreen() {
         style={styles.input}
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
 
       <TextInput
@@ -70,8 +86,16 @@ export default function RegisterScreen() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Registrarse</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleRegister}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.buttonText}>Registrarse</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/login")}>
@@ -105,6 +129,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: "white",

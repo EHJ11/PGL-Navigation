@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
@@ -15,6 +16,7 @@ import { isValidEmail, isValidPassword } from "../utils/validators";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
     if (!isValidEmail(email)) {
@@ -27,18 +29,36 @@ export default function LoginScreen() {
       return;
     }
 
-    const response = await loginUser(email, password);
+    setLoading(true);
 
-    if (!response.ok) {
-      Alert.alert("Error", response.data.message);
-      return;
+    try {
+      const response = await loginUser(email, password);
+
+      if (!response.ok) {
+        const message =
+          response.data?.message ||
+          response.data?.error ||
+          "Error al iniciar sesión";
+        Alert.alert("Error", message);
+        return;
+      }
+
+      const token = response.data?.object?.token;
+
+      if (!token) {
+        Alert.alert("Error", "No se recibió el token del servidor");
+        return;
+      }
+
+      await saveToken(token);
+      Alert.alert("Correcto", "Login exitoso");
+      router.replace("/welcome");
+    } catch (error) {
+      Alert.alert("Error", "Ocurrió un error inesperado. Inténtalo de nuevo.");
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
     }
-
-    await saveToken(response.data.object.token);
-
-    Alert.alert("Correcto", "Login exitoso");
-
-    router.replace("/welcome");
   }
 
   return (
@@ -50,6 +70,8 @@ export default function LoginScreen() {
         style={styles.input}
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
 
       <TextInput
@@ -60,8 +82,16 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.buttonText}>Login</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/register")}>
@@ -95,6 +125,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: "white",

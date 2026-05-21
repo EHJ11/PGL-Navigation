@@ -68,6 +68,11 @@ export default function RootLayout() {
         name="notion"
         options={{ drawerLabel: "Notion", title: "Notion" }}
       />
+      {/* ✅ CORREGIDO: counter existía pero no estaba registrada en el Drawer */}
+      <Drawer.Screen
+        name="counter"
+        options={{ drawerLabel: "Contador", title: "Contador" }}
+      />
       <Drawer.Screen
         name="login"
         options={{ drawerItemStyle: { display: "none" }, title: "Login" }}
